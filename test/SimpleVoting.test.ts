@@ -31,7 +31,38 @@ describe("SimpleVoting", function () {
         });
 
         it("Voting should not be allowed by default", async () => {
-            
+            expect(await simpleVoting.isVotingAllowed()).to.eq(false);
         });
+
+        it("Should set the correct owner", async () => {
+            expect(await simpleVoting.owner()).to.eq(owner.address);
+        });
+    });
+
+    describe("Voting", () => {
+        it("Should not allow other account than owner to start voting", async () => {
+            await expect(simpleVoting.connect(acc1).startVoting()).to.be.revertedWith("Ownable: caller is not the owner");
+        });
+
+        // TO DO--------------------------------------------------------------------------------------------------------
+        it("Should allow owner to start voting", async () => {});
+
+        it("Should not allow other account than owner to stop voting", async () => {});
+
+        it("Should allow owner to stop voting", async () => {});
+
+        it("Should not allow other account than owner to add candidate", async () => {});
+
+        it("Should allow owner to add candidate", async () => {});
+
+        it("Should allow voters to vote for candidate", async () => {});
+
+        it("Should allow voter to vote only once", async () => {});
+
+        it("Should not allow voter to vote if voting is not allowed", async () => {});
+
+        it("Shoould not allow to add same candidate twice", async () => {});
+
+        it("Should not allow to add candidate with empty name", async () => {});
     });
 });

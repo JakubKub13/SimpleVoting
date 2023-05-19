@@ -30,8 +30,15 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     mapping(address => bool) public voters;
     mapping(uint => Candidate) public candidates;
     mapping (string => bool) existingCandidates;
-    
 
+    /**
+     * Custom errors to more gas efficient than regular require statements
+     */
+    error CandidateAlreadyAdded();
+    error VotingNotActive();
+    error NotRegisteredVoter();
+    error InvalidCandidate();
+    error VotingNotEnded();
 
     constructor() {}
 
@@ -49,23 +56,27 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     */
     function addCandidate(string memory _name) external onlyOwner {
     // Checks if the candidate is already added
-    require(!existingCandidates[_name], "This candidate is already added.");
+    //require(!existingCandidates[_name], "This candidate is already added.");
+    if (existingCandidates[_name]) revert CandidateAlreadyAdded();
 
     candidatesCount++;
     candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
 
     // Marks this candidate as added
     existingCandidates[_name] = true;
-}
+    }
 
     /**
     @notice external function vote only registered voters are able to vote for candidate reentrancy attacks are prevented by modifier nonReentrant -> mutex patter
     @param _candidateId -> id of candidate voter wants to vote for 
     */
     function vote(uint _candidateId) external nonReentrant {
-        require(isVotingAllowed, "Voting is not active");
-        require(voters[msg.sender], "Only registered voters can vote.");
-        require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate.");
+        //require(isVotingAllowed, "Voting is not active");
+        if (!isVotingAllowed) revert VotingNotActive();
+        //require(voters[msg.sender], "Only registered voters can vote.");
+        if (!voters[msg.sender]) revert NotRegisteredVoter();
+        //require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate.");
+        if (!(_candidateId > 0 && _candidateId <= candidatesCount)) revert InvalidCandidate();
 
         voters[msg.sender] = false; // to prevent double voting & reentrancy
 
@@ -76,7 +87,9 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     @notice external view function returns the name of winning candidate
     */
     function winner() external view returns (string memory, uint256) {
-        require(!isVotingAllowed, "Voting is not ended");
+        //require(!isVotingAllowed, "Voting is not ended");
+        if (isVotingAllowed) revert VotingNotEnded();
+
         uint maxVote = 0;
         string memory winnerName;
         for (uint i = 1; i <= candidatesCount; i++) {
