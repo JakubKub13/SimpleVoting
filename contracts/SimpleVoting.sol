@@ -39,7 +39,7 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     @notice function that can be called only by the owner of contract and allow address to vote by adding it to mapping of voters
     @param _voter - address that will be able to vote for candidate
     */
-    function addVoter(address _voter) public onlyOwner {
+    function addVoter(address _voter) external onlyOwner {
         voters[_voter] = true;
     }
 
@@ -47,7 +47,7 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     @notice function that can be called only by the owner of contract and register Canditate voters can vote for
     @ _name - name of the canditate 
     */
-    function addCandidate(string memory _name) public onlyOwner {
+    function addCandidate(string memory _name) external onlyOwner {
     // Checks if the candidate is already added
     require(!existingCandidates[_name], "This candidate is already added.");
 
