@@ -39,6 +39,7 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     error NotRegisteredVoter();
     error InvalidCandidate();
     error VotingNotEnded();
+    error CandidateNameEmpty();
 
     constructor() {}
 
@@ -55,6 +56,9 @@ contract SimpleVoting is Ownable, ReentrancyGuard {
     @ _name - name of the canditate 
     */
     function addCandidate(string memory _name) external onlyOwner {
+    // Checks if the candidate name is not empty
+    //require(bytes(_name).length > 0, "Candidate name cannot be empty.");
+    if (bytes(_name).length == 0) revert CandidateNameEmpty();
     // Checks if the candidate is already added
     //require(!existingCandidates[_name], "This candidate is already added.");
     if (existingCandidates[_name]) revert CandidateAlreadyAdded();
