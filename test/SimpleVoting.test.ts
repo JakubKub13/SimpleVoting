@@ -78,20 +78,63 @@ describe("SimpleVoting", function () {
             await simpleVoting.addCandidate("Candidate 3");
             await simpleVoting.addCandidate("Candidate 4");
             expect(await simpleVoting.candidatesCount()).to.eq(4);
-
-
         });
 
         it("Should allow voters to vote for candidate", async () => {
-
+            await simpleVoting.addCandidate("Candidate 1");
+            await simpleVoting.addCandidate("Candidate 2");
+            await simpleVoting.addCandidate("Candidate 3");
+            await simpleVoting.addCandidate("Candidate 4");
+            await simpleVoting.addVoter(acc1.address);
+            await simpleVoting.addVoter(acc2.address);
+            await simpleVoting.addVoter(acc3.address);
+            await simpleVoting.addVoter(acc4.address);
+            await simpleVoting.startVoting();
+            await expect(simpleVoting.connect(acc1).vote(1)).not.to.be.reverted;
+            await expect(simpleVoting.connect(acc2).vote(2)).not.to.be.reverted;
+            await expect(simpleVoting.connect(acc3).vote(3)).not.to.be.reverted;
+            await expect(simpleVoting.connect(acc4).vote(4)).not.to.be.reverted;
         });
 
-        it("Should allow voter to vote only once", async () => {});
+        it("Should allow voter to vote only once", async () => {
+            await simpleVoting.addCandidate("Candidate 1");
+            await simpleVoting.addVoter(acc1.address);
+            await simpleVoting.startVoting();
+            await simpleVoting.connect(acc1).vote(1);
+            await expect(simpleVoting.connect(acc1).vote(1)).to.be.revertedWithCustomError(simpleVoting, "NotRegisteredVoter")
+        });
 
-        it("Should not allow voter to vote if voting is not allowed", async () => {});
+        it("Should not allow voter to vote if voting is not allowed", async () => {
+            await simpleVoting.addCandidate("Candidate 1");
+            await simpleVoting.addVoter(acc1.address);
+            await expect(simpleVoting.connect(acc1).vote(1)).to.be.revertedWithCustomError(simpleVoting, "VotingNotActive")
+        });
 
-        it("Shoould not allow to add same candidate twice", async () => {});
+        it("Shoould not allow to add same candidate twice", async () => {
+            await simpleVoting.addCandidate("Candidate 1");
+            await expect(simpleVoting.addCandidate("Candidate 1")).to.be.revertedWithCustomError(simpleVoting, "CandidateAlreadyAdded");
+        });
 
-        it("Should not allow to add candidate with empty name", async () => {});
+        it("Should not allow to add candidate with empty name", async () => {
+            await expect(simpleVoting.addCandidate("")).to.be.revertedWithCustomError(simpleVoting, "CandidateNameEmpty");
+        });
+
+        it("Should pick a winner candidate with most votes", async () => {
+            await simpleVoting.addCandidate("Candidate 1");
+            await simpleVoting.addCandidate("Candidate 2");
+            await simpleVoting.addCandidate("Candidate 3");
+            await simpleVoting.addCandidate("Candidate 4");
+            await simpleVoting.addVoter(acc1.address);
+            await simpleVoting.addVoter(acc2.address);
+            await simpleVoting.addVoter(acc3.address);
+            await simpleVoting.addVoter(acc4.address);
+            await simpleVoting.startVoting();
+            await simpleVoting.connect(acc1).vote(1);
+            await simpleVoting.connect(acc2).vote(1);
+            await simpleVoting.connect(acc3).vote(2);
+            await simpleVoting.connect(acc4).vote(3);
+            await simpleVoting.endVoting();
+            console.log(await simpleVoting.winner())
+        });
     });
 });
