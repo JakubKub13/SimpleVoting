@@ -2,6 +2,13 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SimpleVoting, SimpleVoting__factory } from "../typechain-types";
+import { experimentalAddHardhatNetworkMessageTraceHook } from "hardhat/config";
+
+interface Candidate {
+    id: number;
+    name: string;
+    voteCount: number;
+}
 
 describe("SimpleVoting", function () {
     let owner: SignerWithAddress;
@@ -45,17 +52,39 @@ describe("SimpleVoting", function () {
         });
 
         // TO DO--------------------------------------------------------------------------------------------------------
-        it("Should allow owner to start voting", async () => {});
+        it("Should allow owner to start voting", async () => {
+            await simpleVoting.startVoting();
+            expect(await simpleVoting.isVotingAllowed()).to.eq(true);
+        });
 
-        it("Should not allow other account than owner to stop voting", async () => {});
+        it("Should not allow other account than owner to stop voting", async () => {
+            await simpleVoting.startVoting();
+            await expect(simpleVoting.connect(acc1).endVoting()).to.be.revertedWith("Ownable: caller is not the owner");
+        });
 
-        it("Should allow owner to stop voting", async () => {});
+        it("Should allow owner to stop voting", async () => {
+            await simpleVoting.startVoting();
+            await simpleVoting.endVoting();
+            expect(await simpleVoting.isVotingAllowed()).to.eq(false);
+        });
 
-        it("Should not allow other account than owner to add candidate", async () => {});
+        it("Should not allow other account than owner to add candidate", async () => {
+            await expect(simpleVoting.connect(acc1).addCandidate("Candidate 1")).to.be.revertedWith("Ownable: caller is not the owner");
+        });
 
-        it("Should allow owner to add candidate", async () => {});
+        it("Should allow owner to add candidate", async () => {
+            await simpleVoting.addCandidate("Candidate 1");
+            await simpleVoting.addCandidate("Candidate 2");
+            await simpleVoting.addCandidate("Candidate 3");
+            await simpleVoting.addCandidate("Candidate 4");
+            expect(await simpleVoting.candidatesCount()).to.eq(4);
 
-        it("Should allow voters to vote for candidate", async () => {});
+
+        });
+
+        it("Should allow voters to vote for candidate", async () => {
+
+        });
 
         it("Should allow voter to vote only once", async () => {});
 
